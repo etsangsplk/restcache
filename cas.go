@@ -22,20 +22,23 @@ type CAS struct {
 func NewServer(store blobstore.Client) *CAS {
 	c := CAS{store: store}
 	mux := goji.NewMux()
-	mux.Use(func(next http.Handler) http.Handler {
+
+	auth := func(next http.HandlerFunc) http.HandlerFunc {
 		// TODO: Use basic authentication once Bazel support lands
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
 			user := pat.Param(r, "user")
 			pass := pat.Param(r, "pass")
 			if user != c.AccessKey || pass != c.SecretKey {
 				http.Error(w, "Unauthorized.", 401)
 				return
 			}
-			next.ServeHTTP(w, r)
-		})
-	})
-	mux.HandleFunc(pat.Get("/:user/:pass/:key"), c.Get)
-	mux.HandleFunc(pat.Put("/:user/:pass/:key"), c.Put)
+			next(w, r)
+		}
+	}
+
+	mux.HandleFunc(pat.Get("/:user/:pass/:key"), auth(c.Get))
+	mux.HandleFunc(pat.Put("/:user/:pass/:key"), auth(c.Put))
+	mux.Handle(pat.Get("/*"), http.NotFoundHandler())
 	c.handler = mux
 	return &c
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 
@@ -18,7 +19,9 @@ func main() {
 		port = "8080"
 	}
 
-	sess := session.Must(session.NewSession())
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"),
+	}))
 
 	bucket := os.Getenv("S3_BUCKET")
 	if bucket == "" {
