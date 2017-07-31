@@ -1,4 +1,4 @@
-package rediscas
+package cas
 
 import (
 	"fmt"

@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 
 	"stackmachine.com/blobstore"
-	cas "stackmachine.com/cas"
+	"stackmachine.com/cas"
 )
 
 func main() {
