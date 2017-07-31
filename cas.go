@@ -1,11 +1,9 @@
-package main
+package cas
 
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 
 	"goji.io"
 	"goji.io/pat"
@@ -14,11 +12,32 @@ import (
 )
 
 type CAS struct {
-	client *redis.Client
+	AccessKey string
+	SecretKey string
+
+	client  *redis.Client
+	handler http.Handler
 }
 
-func NewCAS(client *redis.Client) *CAS {
-	return &CAS{client: client}
+func NewServer(client *redis.Client) *CAS {
+	c := CAS{client: client}
+	mux := goji.NewMux()
+	mux.Use(func(next http.Handler) http.Handler {
+		// TODO: Use basic authentication once Bazel support lands
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user := pat.Param(r, "user")
+			pass := pat.Param(r, "pass")
+			if user != c.AccessKey && pass != c.SecretKey {
+				http.Error(w, "Unauthorized.", 401)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
+	mux.HandleFunc(pat.Get("/:user/:pass/:key"), c.Get)
+	mux.HandleFunc(pat.Put("/:user/:pass/:key"), c.Put)
+	c.handler = mux
+	return &c
 }
 
 func (c *CAS) Get(w http.ResponseWriter, r *http.Request) {
@@ -67,37 +86,6 @@ func (c *CAS) Put(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func handler() http.Handler {
-	opt, err := redis.ParseURL(os.Getenv("REDIS_URL"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	mux := goji.NewMux()
-	mux.Use(func(next http.Handler) http.Handler {
-		// TODO: Use basic authentication once Bazel support lands
-		access := os.Getenv("CAS_ACCESS_KEY_ID")
-		secret := os.Getenv("CAS_SECRET_ACCESS_KEY")
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			user := pat.Param(r, "user")
-			pass := pat.Param(r, "pass")
-			if user != access && secret != pass {
-				http.Error(w, "Unauthorized.", 401)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	})
-	cas := NewCAS(redis.NewClient(opt))
-	mux.HandleFunc(pat.Get("/:user/:pass/:key"), cas.Get)
-	mux.HandleFunc(pat.Put("/:user/:pass/:key"), cas.Put)
-	return mux
-}
-
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	http.ListenAndServe("localhost:"+port, handler())
+func (c *CAS) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c.handler.ServeHTTP(w, r)
 }
