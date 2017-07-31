@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/go-redis/redis"
-	"github.com/kyleconroy/cas"
+	"stackmachine.com/rediscas"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv := cas.NewServer(redis.NewClient(opt))
+	srv := rediscas.NewServer(redis.NewClient(opt))
 	srv.AccessKey = os.Getenv("CAS_ACCESS_KEY_ID")
 	srv.SecretKey = os.Getenv("CAS_SECRET_ACCESS_KEY")
 	http.ListenAndServe("localhost:"+port, srv)

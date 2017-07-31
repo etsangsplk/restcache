@@ -1,4 +1,4 @@
-package cas
+package rediscas
 
 import (
 	"crypto/rand"
