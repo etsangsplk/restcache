@@ -1,0 +1,7 @@
+{
+  "rootPath": "stackmachine.com/rediscas",
+  "heroku": {
+    "install" : [ "./..." ],
+    "goVersion": "go1.8"
+  }
+}
