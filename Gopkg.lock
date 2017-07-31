@@ -29,11 +29,11 @@
   branch = "master"
   name = "stackmachine.com/blobstore"
   packages = ["."]
-  revision = "e494beda7b98045d50b93e5861acb8959b669cd9"
+  revision = "e026b464d2066d2a5d399fa17af657d866f86ae5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "30f88e0630f2daa116e1aac2baa978609cda42dab281b1d4781467e4f1a30bd3"
+  inputs-digest = "79dea656e00184bb80a323a31b90730d353dd543e6f783da005c39bb2ca475dc"
   solver-name = "gps-cdcl"
   solver-version = 1
