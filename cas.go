@@ -2,25 +2,25 @@ package rediscas
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+
+	"stackmachine.com/blobstore"
 
 	"goji.io"
 	"goji.io/pat"
-
-	"github.com/go-redis/redis"
 )
 
 type CAS struct {
 	AccessKey string
 	SecretKey string
 
-	client  *redis.Client
+	store   blobstore.Client
 	handler http.Handler
 }
 
-func NewServer(client *redis.Client) *CAS {
-	c := CAS{client: client}
+func NewServer(store blobstore.Client) *CAS {
+	c := CAS{store: store}
 	mux := goji.NewMux()
 	mux.Use(func(next http.Handler) http.Handler {
 		// TODO: Use basic authentication once Bazel support lands
@@ -46,21 +46,24 @@ func (c *CAS) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("No key provided"), http.StatusBadRequest)
 		return
 	}
-	exists, err := c.client.Exists(key).Result()
+	exists, err := c.store.Contains(key)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error talking to Redis: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error talking to blobstore: %s", err), http.StatusInternalServerError)
 		return
 	}
-	if exists == 0 {
+	if !exists {
 		http.Error(w, fmt.Sprintf("Key %s does not exist", key), http.StatusNotFound)
 		return
 	}
-	val, err := c.client.Get(key).Bytes()
+	reader, n, err := c.store.Get(key)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error talking to Redis: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error talking to blobstore: %s", err), http.StatusInternalServerError)
 		return
 	}
-	w.Write(val)
+	if _, err := io.CopyN(w, reader, n); err != nil {
+		http.Error(w, fmt.Sprintf("Error writing out response: %s", err), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (c *CAS) Put(w http.ResponseWriter, r *http.Request) {
@@ -73,14 +76,9 @@ func (c *CAS) Put(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("No body provided"), http.StatusBadRequest)
 		return
 	}
-	blob, err := ioutil.ReadAll(r.Body)
+	err := c.store.Put(key, r.Body, r.ContentLength)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error reading request body: %s", err), http.StatusInternalServerError)
-		return
-	}
-	err = c.client.Set(key, blob, 0).Err()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error talking to Redis: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error talking to blobstore: %s", err), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

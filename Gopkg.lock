@@ -2,10 +2,22 @@
 
 
 [[projects]]
-  name = "github.com/go-redis/redis"
-  packages = [".","internal","internal/consistenthash","internal/hashtag","internal/pool","internal/proto"]
-  revision = "a005081ecd2d0d963a1a20efda049223205cf90a"
-  version = "v6.5.4"
+  name = "github.com/aws/aws-sdk-go"
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sts"]
+  revision = "5e436e55ac5eddc739f26a2a209b3f4248ee8e0e"
+  version = "v1.10.18"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "d3de07a94d22b4a0972deb4b96d790c2c0ce8333"
+  version = "v1.28.0"
+
+[[projects]]
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  revision = "3433f3ea46d9f8019119e7dd41274e112a2359a9"
+  version = "0.2.2"
 
 [[projects]]
   name = "goji.io"
@@ -13,9 +25,15 @@
   revision = "0d89ff54b2c18c9c4ba530e32496aef902d3c6cd"
   version = "v2.0"
 
+[[projects]]
+  branch = "master"
+  name = "stackmachine.com/blobstore"
+  packages = ["."]
+  revision = "e494beda7b98045d50b93e5861acb8959b669cd9"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "58afbc4764bdd13cb0c8ca3e0a4c4e18e62a786e9d1d1c430530974673325b83"
+  inputs-digest = "30f88e0630f2daa116e1aac2baa978609cda42dab281b1d4781467e4f1a30bd3"
   solver-name = "gps-cdcl"
   solver-version = 1

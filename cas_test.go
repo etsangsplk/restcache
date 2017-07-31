@@ -2,13 +2,14 @@ package rediscas
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/go-redis/redis"
+	"stackmachine.com/blobstore"
 )
 
 func TestServer(t *testing.T) {
@@ -19,17 +20,12 @@ func TestServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	srv := NewServer(client)
+	srv := NewServer(blobstore.NewMap())
 	srv.AccessKey = "foo"
 	srv.SecretKey = "bar"
 
-	url := "/foo/bar/" + string(b)
+	url := "/foo/bar/" + hex.EncodeToString(b)
+	t.Logf("URL: %s", url)
 
 	{
 		// Check for an artifact in the cache
