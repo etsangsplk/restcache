@@ -27,7 +27,7 @@ func NewServer(client *redis.Client) *CAS {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			user := pat.Param(r, "user")
 			pass := pat.Param(r, "pass")
-			if user != c.AccessKey && pass != c.SecretKey {
+			if user != c.AccessKey || pass != c.SecretKey {
 				http.Error(w, "Unauthorized.", 401)
 				return
 			}
