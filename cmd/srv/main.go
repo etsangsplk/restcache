@@ -25,9 +25,15 @@ func main() {
 		log.Fatalf("No bucket provided; please set S3_BUCKET")
 	}
 
+	fs, err := blobstore.NewFileSystem("cas")
+	if err != nil {
+		log.Fatalf("Failed creating FS store: %s", err)
+	}
+
 	size := int64(1000) * 1e+6 // 1GB
+
 	main := blobstore.NewS3(s3.New(sess), bucket)
-	cache := blobstore.NewSynchronized(blobstore.LRU(size, blobstore.NewFileSystem("cas")))
+	cache := blobstore.NewSynchronized(blobstore.LRU(size, fs))
 	store := blobstore.Prefixed("cas", blobstore.Cached(main, cache))
 
 	srv := cas.NewServer(store)
