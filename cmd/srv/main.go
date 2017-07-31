@@ -42,5 +42,7 @@ func main() {
 	srv := cas.NewServer(store)
 	srv.AccessKey = os.Getenv("CAS_ACCESS_KEY_ID")
 	srv.SecretKey = os.Getenv("CAS_SECRET_ACCESS_KEY")
-	http.ListenAndServe("localhost:"+port, srv)
+
+	log.Printf("Starting CAS server on port %s", port)
+	http.ListenAndServe(":"+port, srv)
 }
