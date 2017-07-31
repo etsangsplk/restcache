@@ -1,4 +1,4 @@
-package cas
+package restcache
 
 import (
 	"crypto/rand"
@@ -21,10 +21,7 @@ func TestServer(t *testing.T) {
 	}
 
 	srv := NewServer(blobstore.NewMap())
-	srv.AccessKey = "foo"
-	srv.SecretKey = "bar"
-
-	url := "/foo/bar/" + hex.EncodeToString(b)
+	url := "/cache/" + hex.EncodeToString(b)
 	t.Logf("URL: %s", url)
 
 	{

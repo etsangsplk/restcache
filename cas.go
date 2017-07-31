@@ -1,4 +1,4 @@
-package cas
+package restcache
 
 import (
 	"fmt"
@@ -12,9 +12,6 @@ import (
 )
 
 type CAS struct {
-	AccessKey string
-	SecretKey string
-
 	store   blobstore.Client
 	handler http.Handler
 }
@@ -22,23 +19,8 @@ type CAS struct {
 func NewServer(store blobstore.Client) *CAS {
 	c := CAS{store: store}
 	mux := goji.NewMux()
-
-	auth := func(next http.HandlerFunc) http.HandlerFunc {
-		// TODO: Use basic authentication once Bazel support lands
-		return func(w http.ResponseWriter, r *http.Request) {
-			user := pat.Param(r, "user")
-			pass := pat.Param(r, "pass")
-			if user != c.AccessKey || pass != c.SecretKey {
-				http.Error(w, "Unauthorized.", 401)
-				return
-			}
-			next(w, r)
-		}
-	}
-
-	mux.HandleFunc(pat.Get("/:user/:pass/:key"), auth(c.Get))
-	mux.HandleFunc(pat.Put("/:user/:pass/:key"), auth(c.Put))
-	mux.Handle(pat.Get("/*"), http.NotFoundHandler())
+	mux.HandleFunc(pat.Get("/cache/:key"), c.Get)
+	mux.HandleFunc(pat.Put("/cache/:key"), c.Put)
 	c.handler = mux
 	return &c
 }

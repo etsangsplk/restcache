@@ -1,5 +1,5 @@
 {
-  "rootPath": "stackmachine.com/cas",
+  "rootPath": "stackmachine.com/restcache",
   "heroku": {
     "install" : [ "./..." ],
     "goVersion": "go1.8"

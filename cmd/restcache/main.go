@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 
 	"stackmachine.com/blobstore"
-	"stackmachine.com/cas"
+	"stackmachine.com/restcache"
 )
 
 func main() {
@@ -39,10 +39,6 @@ func main() {
 	cache := blobstore.NewSynchronized(blobstore.LRU(size, fs))
 	store := blobstore.Prefixed("cas", blobstore.Cached(main, cache))
 
-	srv := cas.NewServer(store)
-	srv.AccessKey = os.Getenv("CAS_ACCESS_KEY_ID")
-	srv.SecretKey = os.Getenv("CAS_SECRET_ACCESS_KEY")
-
 	log.Printf("Starting CAS server on port %s", port)
-	http.ListenAndServe(":"+port, srv)
+	http.ListenAndServe(":"+port, restcache.NewServer(store))
 }
