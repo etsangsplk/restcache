@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"stackmachine.com/blobstore"
 
@@ -28,6 +29,7 @@ func NewServer(store blobstore.Client) *CAS {
 func (c *CAS) Get(w http.ResponseWriter, r *http.Request) {
 	key := pat.Param(r, "key")
 	if key == "" {
+		w.Header().Set("Cache-Control", "private, no-store")
 		http.Error(w, fmt.Sprintf("No key provided"), http.StatusBadRequest)
 		return
 	}
@@ -37,6 +39,7 @@ func (c *CAS) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !exists {
+		w.Header().Set("Cache-Control", "private, no-store")
 		http.Error(w, fmt.Sprintf("Key %s does not exist", key), http.StatusNotFound)
 		return
 	}
@@ -45,6 +48,9 @@ func (c *CAS) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error talking to blobstore: %s", err), http.StatusInternalServerError)
 		return
 	}
+
+	age := time.Hour * 24 * 365 // One year
+	w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", int(age.Seconds())))
 	if _, err := io.CopyN(w, reader, n); err != nil {
 		http.Error(w, fmt.Sprintf("Error writing out response: %s", err), http.StatusInternalServerError)
 		return
@@ -52,6 +58,7 @@ func (c *CAS) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CAS) Put(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "private, no-store")
 	key := pat.Param(r, "key")
 	if key == "" {
 		http.Error(w, fmt.Sprintf("No key provided"), http.StatusBadRequest)

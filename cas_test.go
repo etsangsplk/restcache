@@ -37,6 +37,11 @@ func TestServer(t *testing.T) {
 			t.Logf("body: %#v", string(body))
 			t.Fatalf("Expected lookup to fail")
 		}
+
+		hdr := w.Header().Get("Cache-Control")
+		if hdr != "private, no-store" {
+			t.Errorf("Expected GET to be uncached; %s", hdr)
+		}
 	}
 
 	{
@@ -52,6 +57,11 @@ func TestServer(t *testing.T) {
 			t.Logf("body: %#v", string(body))
 			t.Fatalf("Expected upload to succeed")
 		}
+
+		hdr := w.Header().Get("Cache-Control")
+		if hdr != "private, no-store" {
+			t.Errorf("Expected PUT to be uncached; %s", hdr)
+		}
 	}
 
 	{
@@ -66,6 +76,11 @@ func TestServer(t *testing.T) {
 			t.Logf("resp: %#v", resp)
 			t.Logf("body: %#v", string(body))
 			t.Fatalf("Expected upload to succeed")
+		}
+
+		hdr := w.Header().Get("Cache-Control")
+		if hdr != "max-age=31536000" {
+			t.Errorf("Expected GET to be cached; %s", hdr)
 		}
 	}
 }
