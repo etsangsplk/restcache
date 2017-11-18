@@ -21,7 +21,7 @@ func TestServer(t *testing.T) {
 	}
 
 	srv := NewServer(blobstore.NewMap())
-	url := "/cache/" + hex.EncodeToString(b)
+	url := "/cas/" + hex.EncodeToString(b)
 	t.Logf("URL: %s", url)
 
 	{

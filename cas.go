@@ -20,8 +20,10 @@ type CAS struct {
 func NewServer(store blobstore.Client) *CAS {
 	c := CAS{store: store}
 	mux := goji.NewMux()
-	mux.HandleFunc(pat.Get("/cache/:key"), c.Get)
-	mux.HandleFunc(pat.Put("/cache/:key"), c.Put)
+	mux.HandleFunc(pat.Get("/cas/:key"), c.Get)
+	mux.HandleFunc(pat.Get("/ac/:key"), c.Get)
+	mux.HandleFunc(pat.Put("/cas/:key"), c.Put)
+	mux.HandleFunc(pat.Put("/ac/:key"), c.Put)
 	c.handler = mux
 	return &c
 }
