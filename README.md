@@ -4,13 +4,13 @@
 ## Install
 
 ```
-dep ensure stackmachine.com/restcache
+dep ensure github.com/stackmachine/restcache
 ```
 
 If you want to install the `restcache` server binary, use `go get`.
 
 ```
-go get -u stackmachine.com/restcache/cmd/restcache
+go get -u github.com/stackmachine/restcache/cmd/restcache
 ```
 
 ## Usage
